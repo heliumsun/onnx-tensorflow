@@ -89,14 +89,14 @@ class ConvMixin(BroadcastMixin):
 
     group = node.attrs.get("group", 1)
 
-    weight_groups = tf.split(weights, num_or_size_splits=group, axis=-1)
+    weight_groups = tf.split(weights, num_or_size_splits=group, axis=-1) if group > 1 else [weights]
 
     if support_cuda:
-      xs = tf.split(x, num_or_size_splits=group, axis=1)
+      xs = tf.split(x, num_or_size_splits=group, axis=1) if group > 1 else [x]
     else:
       x = tf.transpose(
           x, perm=get_perm_from_formats(storage_format, compute_format))
-      xs = tf.split(x, num_or_size_splits=group, axis=-1)
+      xs = tf.split(x, num_or_size_splits=group, axis=-1) if group > 1 else [x]
 
     if transpose:
       if dilations != [1] * spatial_size:
@@ -229,22 +229,19 @@ class ConvMixin(BroadcastMixin):
 
     if len(node.inputs) == 2:
       if support_cuda:
-        output = tf.concat(convolved, axis=1)
+        output = tf.concat(convolved, axis=1) if len(convolved) > 1 else convolved[0]
       else:
-        output = tf.concat(convolved, axis=-1)
+        output = tf.concat(convolved, axis=-1) if len(convolved) > 1 else convolved[0]
         output = tf.transpose(
             output, perm=get_perm_from_formats(compute_format, storage_format))
     else:
       bias = input_dict[node.inputs[2]]
-      bias = cls.explicit_broadcast([x, bias], compute_c_idx)
-
       if support_cuda:
-        output = tf.concat(convolved, axis=1)
-        output = tf.add(output, bias)
+        output = tf.concat(convolved, axis=1) if len(convolved) > 1 else convolved[0]
       else:
-        output = tf.concat(convolved, axis=-1)
-        output = tf.add(output, bias)
+        output = tf.concat(convolved, axis=-1) if len(convolved) > 1 else convolved[0]
         output = tf.transpose(
             output, perm=get_perm_from_formats(compute_format, storage_format))
+      output = tf.nn.bias_add(output, bias, storage_format)
 
     return [output]

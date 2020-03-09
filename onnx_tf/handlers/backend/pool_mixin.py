@@ -46,7 +46,8 @@ class PoolMixin(object):
       # If padding is specified, try to recover it from explicit padding
       # specification to tensorflow padding mode:
       if pads is not None:
-        pad = cls._get_tf_pad(x_shape[2:], kernel_shape, strides, pads)
+        # pad = cls._get_tf_pad(x_shape[2:], kernel_shape, strides, pads)
+        pad = "VALID"
       else:
         pad = "VALID"
     else:
@@ -62,7 +63,7 @@ class PoolMixin(object):
                                        [0] * spatial_size * 2)
 
     if pooling_type in ("AVG", "MAX"):
-      if strict and count_include_pad == 0:
+      if False: #strict and count_include_pad == 0:
         if pad is PAD_TF_INCOMPATIBLE:
           return cls._compatibility_pool(node, input_dict, pooling_type)
       else:
@@ -334,9 +335,10 @@ class PoolMixin(object):
     if pads == [0] * num_sp_dim * 2:
       return "VALID"
 
-    _, same_pads = cls._pool_get_shapes("SAME_UPPER", input_shape,
-                                        kernel_shape, strides, pads)
-    if pads == same_pads:
+    #_, same_pads = cls._pool_get_shapes("SAME_UPPER", input_shape,
+    #                                    kernel_shape, strides, pads)
+    import pdb; pdb.set_trace()
+    if True: #pads == same_pads:
       return "SAME"
 
     return PAD_TF_INCOMPATIBLE

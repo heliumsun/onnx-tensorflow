@@ -55,6 +55,8 @@ class Upsample(BackendHandler):
   def version_9(cls, node, **kwargs):
     x = kwargs["tensor_dict"][node.inputs[0]]
     x_shape = x.get_shape().as_list()
+    if not all(isinstance(d, int) for d in x_shape):
+        x_shape = tf.cast(tf.shape(x), tf.float32)
     attrs = copy.deepcopy(node.attrs)
     scales = kwargs["tensor_dict"][node.inputs[1]]
 

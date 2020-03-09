@@ -104,6 +104,9 @@ class TensorflowRep(BackendRep):
       if node.name in meaningful_names.keys():
         node.name = meaningful_names[node.name]
 
+    output_nodes = [node.name for node in graph_proto.node if node.name in self.outputs]
+    graph_proto = tf.graph_util.extract_sub_graph(graph_proto, output_nodes)
+
     file = open(path, "wb")
     file.write(graph_proto.SerializeToString())
     file.close()
