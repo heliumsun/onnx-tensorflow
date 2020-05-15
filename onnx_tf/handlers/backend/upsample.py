@@ -67,7 +67,7 @@ class Upsample(BackendHandler):
     with tf.control_dependencies([assert_n_c_scale_is_one]):
       h_w_scale = scales[2:]
       h_w_shape = x_shape[2:]
-      new_h_w_shape = tf.cast(h_w_scale * h_w_shape, tf.int32)
+      new_h_w_shape = tf.cast(tf.round(h_w_scale * h_w_shape), tf.int32)
 
       mode = attrs.get("mode", "nearest")
       if mode.lower() == "bilinear" or mode.lower() == "linear":
